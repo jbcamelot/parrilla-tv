@@ -2,8 +2,8 @@
  * Guarda la aplicación para que abra sin conexión. La guía NO pasa por aquí (se guarda en IndexedDB).
  * Al publicar cambios en la app, sube el número de VERSION para que los iPhone se actualicen.
  */
-const VERSION = 'parrilla-v2';
-const LOGOS = 'parrilla-logos';
+const VERSION = 'parrilla-v3';
+const LOGOS = 'parrilla-logos-2';   // nombre nuevo: descarta logos mal guardados por versiones anteriores
 const APP = ['./', './index.html', './guia-worker.js', './manifest.webmanifest',
              './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
@@ -33,11 +33,21 @@ self.addEventListener('fetch', ev => {
     return;
   }
 
-  // Logotipos de las cadenas: se guardan para verlos también sin conexión.
+  // Logotipos de las cadenas: se guardan para verlos también sin conexión (solo si la descarga fue correcta).
   if (url.hostname === 'raw.githubusercontent.com' && url.pathname.includes('/picons_dobleM/')) {
-    ev.respondWith(caches.open(LOGOS).then(c => c.match(req).then(r => r || fetch(req).then(resp => {
-      c.put(req, resp.clone()); return resp;
-    }))));
+    ev.respondWith(caches.open(LOGOS).then(async c => {
+      const guardado = await c.match(req.url);
+      if (guardado) return guardado;
+      try {
+        const resp = await fetch(req.url, {mode: 'cors', credentials: 'omit'});
+        if (resp.ok) c.put(req.url, resp.clone());
+        return resp;
+      } catch (e) {
+        return fetch(req);          // último recurso: petición normal del navegador
+      }
+    }));
+    return;
   }
+
   // Todo lo demás (la guía, imágenes de programas) va directo a la red.
 });

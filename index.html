@@ -30,6 +30,16 @@ header h1{font-size:17px;margin:0 8px 0 0;white-space:nowrap}
 .tabs button{background:none;border:0;padding:6px 12px;border-radius:6px;cursor:pointer;color:var(--mut)}
 .tabs button.on{background:var(--panel2);color:var(--txt)}
 .busca{flex:1;min-width:220px;display:flex;gap:6px}
+.campo{position:relative;display:flex;flex:1;min-width:0}
+.campo input{flex:1;min-width:0;padding-right:32px !important}
+.limpiar{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;border:0;background:#2e3542;color:var(--txt);font-size:13px;line-height:26px;cursor:pointer;display:none;padding:0}
+.campo.lleno .limpiar{display:block}
+input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+#bReset{display:none;border-color:#ffb03c;color:#ffb03c}
+#bReset.on{display:inline-block;background:var(--panel2)}
+.ley-g{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;margin:10px 0 4px}
+.ley-g .mues{width:46px;height:24px;border-radius:5px;background:var(--panel2);border-left:4px solid}
+.ley-g small{color:var(--mut)}
 .busca input{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
 .btn{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 11px;cursor:pointer;white-space:nowrap}
 .btn:hover{border-color:var(--acc)}
@@ -39,6 +49,8 @@ header h1{font-size:17px;margin:0 8px 0 0;white-space:nowrap}
 .dias .btn{padding:4px 9px;font-size:13px}
 .sep{width:1px;height:22px;background:var(--line)}
 .barra input[type=search]{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 9px;width:180px}
+.barra .campo{flex:0 1 200px}
+.barra .campo input{width:100%}
 .barra select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 8px}
 .zoom{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:13px}
 main{flex:1;min-height:0;position:relative}
@@ -174,21 +186,30 @@ footer a{color:var(--mut)}
   .dias{order:-1;flex-basis:100%}
   #bPrev,#bNext,.zoom,.barra .sep{display:none}
   .barra select{flex:1;min-width:0}
-  .barra input[type=search]{flex:1;width:auto;min-width:0}
+  .barra .campo{flex:1 1 0}
+  .barra input[type=search]{width:100%}
   .ch{padding:0 4px 0 6px;gap:2px}
-  .ch img,.ch .ph{display:none}
+  .ch{flex-direction:column;justify-content:center;align-items:flex-start;gap:1px;padding:0 4px 0 6px}
+  .ch img,.ch .ph{width:40px;height:24px;object-position:left center}
+  .ch .ph{font-size:10px}
+  .ch .nm{flex:none;width:100%}
+  .ch .nm b{font-size:11px;font-weight:500}
   .ch .nm small{display:none}
+  .ch .star{position:absolute;top:2px;right:2px}
   .star{font-size:14px}
   #ahora,#buscar{padding:10px}
   .cards{grid-template-columns:1fr}
   .res .ir{display:none}
   .res .cn{width:auto;white-space:normal;font-size:13px}
-  .res .cn img{display:none}
+  .res .cn img{width:30px;height:20px;margin-right:4px}
   .res .hora{width:auto;font-size:13px}
   .res td{padding:7px 5px}
   #modal{padding:0;align-items:flex-end}
   .ficha{max-height:92vh;border-radius:14px 14px 0 0;padding-bottom:env(safe-area-inset-bottom)}
   footer .ley{display:none}
+  #bAyuda{display:inline-block}
+  #bReset .txt{display:none}
+  #bReset,#bAyuda{padding:6px 10px}
 }
 </style>
 </head>
@@ -202,7 +223,8 @@ footer a{color:var(--mut)}
     <button data-v="avisos">🔔<span class="badge" id="nAvisos"></span></button>
   </div>
   <form class="busca" id="fBusca">
-    <input id="q" type="search" placeholder="Buscar programa o cadena… (p. ej. «Real Madrid», «La Promesa», «Telemadrid»)" autocomplete="off">
+    <div class="campo"><input id="q" type="search" enterkeyhint="search" placeholder="Buscar programa o cadena… (p. ej. «Real Madrid», «La Promesa», «Telemadrid»)" autocomplete="off">
+      <button type="button" class="limpiar" id="qX" title="Borrar búsqueda" aria-label="Borrar búsqueda">✕</button></div>
     <button class="btn" type="submit">Buscar</button>
   </form>
 </header>
@@ -214,7 +236,10 @@ footer a{color:var(--mut)}
   <button class="btn" id="bNext" title="Día siguiente">›</button>
   <div class="sep"></div>
   <select id="grupo" title="Grupo de cadenas"></select>
-  <input id="filtroCh" type="search" placeholder="Filtrar cadenas…">
+  <div class="campo"><input id="filtroCh" type="search" placeholder="Filtrar cadenas…" autocomplete="off">
+    <button type="button" class="limpiar" id="filtroX" title="Quitar filtro" aria-label="Quitar filtro">✕</button></div>
+  <button class="btn" id="bReset" title="Volver al estado inicial: todas las cadenas, hoy, ahora">↺<span class="txt"> Restablecer</span></button>
+  <button class="btn" id="bAyuda" title="Qué significa cada color">?</button>
   <div class="sep"></div>
   <label class="zoom">Zoom <input id="zoom" type="range" min="2" max="12" step="1" value="5"></label>
 </div>
@@ -240,7 +265,7 @@ footer a{color:var(--mut)}
 
 <footer>
   <span id="estado">—</span>
-  <span class="ley" id="leyenda"></span>
+  <span class="ley" id="leyenda" title="Ayuda de colores" style="cursor:pointer"></span>
   <span style="margin-left:auto"><a href="#" id="recargar">Actualizar guía</a> · <a href="#" id="acerca">Acerca de</a></span>
 </footer>
 
@@ -449,12 +474,67 @@ async function refrescarTodo() {
   await irADia(dia, false);
   $('#tl').scrollLeft = sl; $('#tl').scrollTop = st;
 }
-const logo = (c, cls='') => c.logo ? `<img class="${cls}" src="${esc(c.logo)}" loading="lazy" alt="" onerror="this.style.visibility='hidden'">`
+const logo = (c, cls='') => c.logo ? `<img class="${cls}" src="${esc(c.logo)}" alt="" referrerpolicy="no-referrer" data-ab="${esc(c.nombre.slice(0,3))}" onerror="logoRoto(this)">`
                                    : `<span class="ph">${esc(c.nombre.slice(0,3))}</span>`;
 const ls = {
   get(k, d) { try { const v = localStorage.getItem('ptv.'+k); return v === null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem('ptv.'+k, JSON.stringify(v)); } catch {} },
 };
+
+function logoRoto(img) {        // si el logo no carga, se sustituye por las iniciales de la cadena
+  const ph = document.createElement('span'); ph.className = 'ph'; ph.textContent = img.dataset.ab || '';
+  img.replaceWith(ph);
+}
+
+// ---------- ayuda de colores
+function ayuda() {
+  const desc = {cine: 'Películas', series: 'Series y telenovelas', deportes: 'Retransmisiones y programas de deporte',
+    noticias: 'Informativos, actualidad y el tiempo', infantil: 'Dibujos y programas infantiles',
+    documental: 'Documentales, naturaleza, viajes, historia', musica: 'Conciertos, videoclips y música clásica',
+    entretenimiento: 'Magacines, concursos, realities, humor, cocina', otro: 'Sin clasificar en la guía'};
+  $('#ficha').innerHTML = `<button class="cerrar" id="cerrar">×</button><div class="cuerpo"><h2>Ayuda</h2>
+    <b>Color de cada programa</b> (barra a la izquierda del programa)
+    <div class="ley-g">${Object.entries(GENEROS).map(([k, v]) =>
+      `<span class="mues" style="border-left-color:var(--g-${k})"></span><span><b>${v}</b><br><small>${desc[k]}</small></span>`).join('')}</div>
+    <b style="display:block;margin-top:14px">Otras marcas</b>
+    <div class="ley-g">
+      <span class="mues" style="border-left-color:var(--g-otro);opacity:.45"></span><span>Programa ya emitido (atenuado)</span>
+      <span class="mues" style="border-left-color:var(--g-otro);background:#232b3a;box-shadow:inset 0 0 0 1px #33415a"></span><span>Programa en emisión ahora</span>
+      <span class="mues" style="border-left-color:var(--g-otro);box-shadow:inset 0 0 0 2px #ffc93c"></span><span>🔔 Programa marcado para avisar</span>
+      <span style="width:46px;text-align:center"><i style="display:inline-block;width:3px;height:24px;background:var(--now)"></i></span><span>Línea roja: hora actual</span>
+      <span style="width:46px;text-align:center;color:#ffc93c;font-size:18px">★</span><span>Cadena favorita (grupo «★ Favoritos»)</span>
+    </div>
+    <p class="mut" style="font-size:13px">El tipo sale de la clasificación de la propia guía; algunos programas vienen sin ella y aparecen en gris.</p></div>`;
+  $('#modal').classList.add('on');
+}
+
+// ---------- limpiar búsqueda / filtros
+function marcaCampos() {
+  for (const id of ['q', 'filtroCh']) $('#' + id).parentElement.classList.toggle('lleno', !!$('#' + id).value);
+  const alterado = S.grupo !== 'Todos' || !!S.filtro.trim() || (S.dia !== null && S.dia !== medianoche(ahora()));
+  $('#bReset').classList.toggle('on', alterado);
+}
+function limpiarBusqueda() {
+  $('#q').value = '';
+  ['oDesc', 'oPas', 'oGrupo'].forEach(id => $('#' + id).checked = false);
+  $('#resBusca').innerHTML = 'Escribe arriba el nombre de un programa, una serie, un equipo, un actor… o de una cadena.';
+  marcaCampos();
+  if (S.vista === 'buscar') cambiaVista('tl');
+}
+function limpiarFiltro() {
+  $('#filtroCh').value = ''; S.filtro = '';
+  $('#tl').scrollTop = 0; aplicaFiltro(); marcaCampos();
+}
+async function restablecer() {
+  S.grupo = 'Todos'; $('#grupo').value = 'Todos'; ls.set('grupo', 'Todos');
+  $('#filtroCh').value = ''; S.filtro = '';
+  limpiarBusqueda();
+  aplicaFiltro();
+  cambiaVista('tl');
+  $('#tl').scrollTop = 0;
+  await irADia(medianoche(ahora()), true);
+  marcaCampos();
+}
 
 // ---------- arranque
 async function init() {
@@ -529,6 +609,7 @@ function pintaDias() {
 
 async function irADia(dia, alAhora=false, foco=null) {
   S.dia = dia;
+  setTimeout(marcaCampos);
   S.win = {s: dia, e: dia + 30*3600};          // de 00:00 a 06:00 del día siguiente
   pintaDias();
   const r = await api(`/api/rejilla?desde=${S.win.s}&hasta=${S.win.e}`);
@@ -964,7 +1045,7 @@ function irACanal(ci) {
   cierraFicha();
   const c = S.canales.find(x => x.i === ci);
   S.grupo = 'Todos'; $('#grupo').value = 'Todos';
-  S.filtro = c.nombre; $('#filtroCh').value = c.nombre;
+  S.filtro = c.nombre; $('#filtroCh').value = c.nombre; marcaCampos();
   aplicaFiltro();
   cambiaVista('tl');
   if (S.dia !== medianoche(ahora())) irADia(medianoche(ahora()), true);
@@ -1013,6 +1094,14 @@ $('#fBusca').addEventListener('submit', e => { e.preventDefault(); buscar(); });
 $('#grupo').addEventListener('change', e => { S.grupo = e.target.value; ls.set('grupo', S.grupo); $('#tl').scrollTop = 0; aplicaFiltro(); });
 let tFiltro = 0;
 $('#filtroCh').addEventListener('input', e => { clearTimeout(tFiltro); tFiltro = setTimeout(() => { S.filtro = e.target.value; $('#tl').scrollTop = 0; aplicaFiltro(); }, 150); });
+$('#qX').addEventListener('click', limpiarBusqueda);
+$('#filtroX').addEventListener('click', limpiarFiltro);
+$('#bReset').addEventListener('click', restablecer);
+$('#bAyuda').addEventListener('click', ayuda);
+$('#leyenda').addEventListener('click', ayuda);
+$('#q').addEventListener('input', marcaCampos);
+$('#filtroCh').addEventListener('input', marcaCampos);
+$('#grupo').addEventListener('change', marcaCampos);
 $('#bAhora').addEventListener('click', () => { cambiaVista('tl'); irADia(medianoche(ahora()), true); });
 $('#bPrev').addEventListener('click', () => { const d = sumaDias(S.dia, -1); if (d >= medianoche(S.estado.desde)) irADia(d); });
 $('#bNext').addEventListener('click', () => { const d = sumaDias(S.dia, 1); if (d <= medianoche(S.estado.hasta)) irADia(d); });

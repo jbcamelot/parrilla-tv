@@ -101,6 +101,10 @@ Con versiones anteriores también funciona, pero descarga una guía más pesada 
 - **Ahora**: lo que se emite en este momento en cada cadena, y lo siguiente.
 - **Buscar**: no distingue tildes ni mayúsculas. Por ejemplo «real madrid», «la promesa» o «telemadrid».
   Si marcas *Buscar también en la descripción*, encuentra también actores y directores.
+- **?** abre la ayuda con el significado de los colores de los programas y del resto de marcas.
+- **✕** dentro del buscador o del filtro de cadenas los borra.
+  **↺ Restablecer** solo aparece cuando hay algo filtrado y vuelve al estado inicial:
+  todas las cadenas, el día de hoy y la hora actual.
 - **Actualizar guía** (abajo) fuerza la descarga si no quieres esperar a la actualización automática.
 
 ### 🔔 Avisos de programas
