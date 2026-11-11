@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Parrilla TV · España</title>
+<meta name="theme-color" content="#161a21">
+<meta name="description" content="Guía de TV de España: TDT, autonómicas, Movistar+, DAZN… con línea de tiempo y buscador">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Parrilla TV">
+<style>
+:root{
+  --bg:#0f1115; --panel:#161a21; --panel2:#1c212a; --line:#2a303b; --txt:#e6e8ec; --mut:#8a93a3;
+  --acc:#4da3ff; --now:#ff4d5e; --chw:200px; --rowh:56px; --hdrh:36px;
+  --g-cine:#e0a43a; --g-series:#b07cff; --g-deportes:#3ccf7a; --g-noticias:#4da3ff; --g-infantil:#ff8ac9;
+  --g-documental:#3cc9c4; --g-musica:#ff7a59; --g-entretenimiento:#d8d24a; --g-otro:#7c8596;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overscroll-behavior:none;-webkit-text-size-adjust:100%;background:var(--bg);color:var(--txt);font:14px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif}
+button,input,select{font:inherit;color:inherit}
+body{display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px;padding:calc(8px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 8px calc(14px + env(safe-area-inset-left));background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+header h1{font-size:17px;margin:0 8px 0 0;white-space:nowrap}
+.tabs{display:flex;gap:2px;background:var(--bg);border-radius:8px;padding:2px}
+.tabs button{background:none;border:0;padding:6px 12px;border-radius:6px;cursor:pointer;color:var(--mut)}
+.tabs button.on{background:var(--panel2);color:var(--txt)}
+.busca{flex:1;min-width:220px;display:flex;gap:6px}
+.busca input{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 11px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--acc)}
+.btn.on{background:var(--acc);border-color:var(--acc);color:#05101f}
+.barra{display:flex;align-items:center;gap:8px;padding:7px 14px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.dias{display:flex;gap:4px;overflow-x:auto;max-width:100%}
+.dias .btn{padding:4px 9px;font-size:13px}
+.sep{width:1px;height:22px;background:var(--line)}
+.barra input[type=search]{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 9px;width:180px}
+.barra select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 8px}
+.zoom{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:13px}
+main{flex:1;min-height:0;position:relative}
+.vista{position:absolute;inset:0;display:none}
+.vista.on{display:block}
+
+/* ---------- línea de tiempo ---------- */
+#tl{overflow:auto;height:100%;position:relative}
+#inner{position:relative}
+#hdr{position:sticky;top:0;height:var(--hdrh);z-index:6;background:var(--panel);border-bottom:1px solid var(--line)}
+#corner{position:sticky;left:0;width:var(--chw);height:100%;background:var(--panel);z-index:7;display:flex;align-items:center;padding:0 10px;color:var(--mut);font-size:12px;border-right:1px solid var(--line)}
+.tick{position:absolute;top:0;height:100%;border-left:1px solid var(--line);padding:9px 0 0 5px;font-size:12px;color:var(--mut);white-space:nowrap}
+.tick.h{color:var(--txt);font-weight:600}
+.tick.dia{border-left:2px solid var(--acc);color:var(--acc)}
+.row{position:absolute;left:0;height:var(--rowh);border-bottom:1px solid #20252e}
+.row:nth-child(odd){background:#12151b}
+.ch{position:sticky;left:0;width:var(--chw);height:100%;z-index:4;background:var(--panel);border-right:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 8px;cursor:pointer}
+.ch img{width:44px;height:30px;object-fit:contain;flex:none}
+.ch .ph{width:44px;height:30px;flex:none;border-radius:4px;background:var(--panel2);display:grid;place-items:center;font-size:11px;color:var(--mut)}
+.ch .nm{flex:1;min-width:0;overflow:hidden}
+.ch .nm b{display:block;font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch .nm small{color:var(--mut);font-size:11px;white-space:nowrap}
+.star{background:none;border:0;cursor:pointer;color:#555c69;font-size:16px;padding:2px}
+.star.on{color:#ffc93c}
+.p{position:absolute;top:4px;bottom:4px;border-radius:6px;background:var(--panel2);border-left:3px solid var(--g-otro);padding:4px 7px;overflow:hidden;overflow:clip;cursor:pointer;white-space:nowrap}
+.p .in{position:sticky;left:calc(var(--chw) + 6px);display:inline-block;vertical-align:top;max-width:100%;overflow:hidden}
+.p:hover{background:#262c37;z-index:2}
+.p .h{font-size:11px;color:var(--mut)}
+.p .t{font-size:13px;overflow:hidden;text-overflow:ellipsis}
+.p.pas{opacity:.45}
+.p.vivo{background:#232b3a;box-shadow:inset 0 0 0 1px #33415a}
+.p.flash{animation:flash 1.6s ease 2}
+@keyframes flash{50%{background:var(--acc);color:#05101f}}
+#now{position:absolute;top:0;width:2px;background:var(--now);z-index:3;pointer-events:none}
+#now::before{content:"";position:sticky;top:var(--hdrh);display:block;width:10px;height:10px;margin-left:-4px;border-radius:50%;background:var(--now)}
+.vacio{position:absolute;left:calc(var(--chw) + 12px);top:16px;color:var(--mut);font-size:12px}
+
+/* colores por género */
+.g-cine{border-left-color:var(--g-cine)} .g-series{border-left-color:var(--g-series)}
+.g-deportes{border-left-color:var(--g-deportes)} .g-noticias{border-left-color:var(--g-noticias)}
+.g-infantil{border-left-color:var(--g-infantil)} .g-documental{border-left-color:var(--g-documental)}
+.g-musica{border-left-color:var(--g-musica)} .g-entretenimiento{border-left-color:var(--g-entretenimiento)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle}
+
+/* ---------- ahora ---------- */
+#ahora{overflow:auto;padding:14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.card .top{display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer}
+.card .top img{width:48px;height:32px;object-fit:contain}
+.card .top b{flex:1}
+.card .cur{cursor:pointer}
+.card .cur .t{font-weight:600;font-size:15px}
+.bar{height:4px;background:var(--line);border-radius:3px;margin:6px 0 4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--now)}
+.card .nx{color:var(--mut);font-size:13px;margin-top:4px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .nx:hover,.card .cur:hover .t{color:var(--acc)}
+.grupo-h{margin:18px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+.grupo-h:first-child{margin-top:0}
+
+/* ---------- búsqueda ---------- */
+#buscar{overflow:auto;padding:14px}
+.opts{display:flex;gap:14px;align-items:center;color:var(--mut);font-size:13px;margin-bottom:12px;flex-wrap:wrap}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.chip{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:3px 10px 3px 4px;cursor:pointer}
+.chip img{width:30px;height:20px;object-fit:contain}
+.chip:hover{border-color:var(--acc)}
+table.res{width:100%;border-collapse:collapse}
+.res td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.res tr.r{cursor:pointer}
+.res tr.r:hover td{background:var(--panel)}
+.res tr.d td{background:var(--bg);color:var(--acc);font-weight:600;padding-top:16px;position:sticky;top:0}
+.res .hora{white-space:nowrap;color:var(--mut);width:110px}
+.res .cn{white-space:nowrap;width:190px}
+.res .cn img{width:34px;height:22px;object-fit:contain;vertical-align:middle;margin-right:6px}
+.res .st{color:var(--mut);font-size:12px}
+.res .ir{white-space:nowrap;text-align:right}
+.res tr.vivo td:first-child{box-shadow:inset 3px 0 var(--now)}
+/* avisos */
+.p.marc{box-shadow:inset 0 0 0 2px #ffc93c}
+.p.marc .t::before,.marc-i::before{content:"🔔 ";font-size:11px}
+.badge{display:inline-block;min-width:18px;padding:0 5px;margin-left:4px;border-radius:9px;background:#ffc93c;color:#111;font-size:11px;font-weight:700;line-height:18px;text-align:center}
+.badge:empty{display:none}
+#avisos{overflow:auto;padding:14px}
+.av-conf{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:10px}
+.av-conf .fila{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.av-conf select,.av-item select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 8px}
+.av-item{display:flex;gap:10px;align-items:center;padding:9px 6px;border-bottom:1px solid var(--line)}
+.av-item .hora{width:92px;flex:none;color:var(--mut);font-size:13px}
+.av-item .tx{flex:1;min-width:0;cursor:pointer}
+.av-item .tx b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av-item .tx small{color:var(--mut)}
+.av-item .ok{color:var(--g-deportes);font-size:12px}
+.av-item .warn{color:#ffb03c;font-size:12px}
+.av-item .x{background:none;border:0;color:var(--mut);font-size:18px;cursor:pointer;padding:4px 6px}
+.btn.amarillo{background:#ffc93c;border-color:#ffc93c;color:#111}
+#ahora,#buscar,#avisos{height:100%;-webkit-overflow-scrolling:touch}
+@media (max-width:700px){
+  .av-item{flex-wrap:wrap;gap:6px}
+  .av-item .hora{width:58px}
+  .av-item .tx{flex:1 1 calc(100% - 70px)}
+  .av-item select{margin-left:64px}
+}
+.mut{color:var(--mut)}
+
+/* ---------- ficha ---------- */
+#modal{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+#modal.on{display:flex}
+.ficha{background:var(--panel);border:1px solid var(--line);border-radius:12px;max-width:720px;width:100%;max-height:90vh;overflow:auto;position:relative}
+.ficha .img{width:100%;max-height:300px;object-fit:cover;display:block;border-radius:12px 12px 0 0;background:#000}
+.ficha .cuerpo{padding:14px 18px 18px}
+.ficha h2{margin:4px 0 6px;font-size:20px}
+.ficha .meta{color:var(--mut);font-size:13px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ficha .meta img{width:42px;height:28px;object-fit:contain}
+.ficha .desc{white-space:pre-wrap;margin-top:12px}
+.ficha .acc{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.cerrar{position:absolute;top:8px;right:8px;background:#000a;border:0;color:#fff;font-size:20px;width:34px;height:34px;border-radius:50%;cursor:pointer;z-index:2}
+footer{padding:5px calc(14px + env(safe-area-inset-right)) calc(5px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));font-size:12px;color:var(--mut);background:var(--panel);border-top:1px solid var(--line);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+footer .ley{display:flex;gap:10px;flex-wrap:wrap}
+footer a{color:var(--mut)}
+#cargando{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--mut);background:var(--bg);z-index:20;text-align:center;padding:20px}
+#cargando .barra-p{width:min(320px,80vw);height:6px;background:var(--line);border-radius:4px;overflow:hidden}
+#cargando .barra-p i{display:block;height:100%;width:0;background:var(--acc);transition:width .2s}
+#aviso{position:fixed;left:50%;bottom:calc(46px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:7px 14px;font-size:13px;z-index:60;display:none;box-shadow:0 4px 16px #0008}
+@media (max-width:700px){
+  :root{--chw:112px;--rowh:52px}
+  header{gap:8px}
+  header h1{font-size:15px;margin:0}
+  .tabs button{padding:6px 9px;font-size:13px}
+  .busca{order:3;flex-basis:100%;min-width:0}
+  .busca input,.barra input[type=search],.barra select{font-size:16px}   /* evita el zoom automático de iOS */
+  .barra{padding:6px 10px;gap:6px}
+  .dias{order:-1;flex-basis:100%}
+  #bPrev,#bNext,.zoom,.barra .sep{display:none}
+  .barra select{flex:1;min-width:0}
+  .barra input[type=search]{flex:1;width:auto;min-width:0}
+  .ch{padding:0 4px 0 6px;gap:2px}
+  .ch img,.ch .ph{display:none}
+  .ch .nm small{display:none}
+  .star{font-size:14px}
+  #ahora,#buscar{padding:10px}
+  .cards{grid-template-columns:1fr}
+  .res .ir{display:none}
+  .res .cn{width:auto;white-space:normal;font-size:13px}
+  .res .cn img{display:none}
+  .res .hora{width:auto;font-size:13px}
+  .res td{padding:7px 5px}
+  #modal{padding:0;align-items:flex-end}
+  .ficha{max-height:92vh;border-radius:14px 14px 0 0;padding-bottom:env(safe-area-inset-bottom)}
+  footer .ley{display:none}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>📺 Parrilla TV</h1>
+  <div class="tabs" id="tabs">
+    <button data-v="tl" class="on">Línea de tiempo</button>
+    <button data-v="ahora">Ahora</button>
+    <button data-v="buscar">Búsqueda</button>
+    <button data-v="avisos">🔔<span class="badge" id="nAvisos"></span></button>
+  </div>
+  <form class="busca" id="fBusca">
+    <input id="q" type="search" placeholder="Buscar programa o cadena… (p. ej. «Real Madrid», «La Promesa», «Telemadrid»)" autocomplete="off">
+    <button class="btn" type="submit">Buscar</button>
+  </form>
+</header>
+
+<div class="barra">
+  <button class="btn" id="bAhora" title="Ir a la hora actual">● Ahora</button>
+  <button class="btn" id="bPrev" title="Día anterior">‹</button>
+  <div class="dias" id="dias"></div>
+  <button class="btn" id="bNext" title="Día siguiente">›</button>
+  <div class="sep"></div>
+  <select id="grupo" title="Grupo de cadenas"></select>
+  <input id="filtroCh" type="search" placeholder="Filtrar cadenas…">
+  <div class="sep"></div>
+  <label class="zoom">Zoom <input id="zoom" type="range" min="2" max="12" step="1" value="5"></label>
+</div>
+
+<main>
+  <div id="cargando"><div style="font-size:40px">📺</div><div id="cargaTxt">Cargando guía…</div><div class="barra-p"><i id="cargaBar"></i></div><div id="cargaSub" style="font-size:12px"></div></div>
+  <section class="vista on" id="v-tl"><div id="tl"><div id="inner">
+    <div id="hdr"><div id="corner">Cadena</div></div>
+    <div id="rows"></div>
+    <div id="now"></div>
+  </div></div></section>
+  <section class="vista" id="v-ahora"><div id="ahora"></div></section>
+  <section class="vista" id="v-avisos"><div id="avisos"></div></section>
+  <section class="vista" id="v-buscar"><div id="buscar">
+    <div class="opts">
+      <label><input type="checkbox" id="oDesc"> Buscar también en la descripción (actores, director…)</label>
+      <label><input type="checkbox" id="oPas"> Incluir emisiones ya pasadas</label>
+      <label><input type="checkbox" id="oGrupo"> Solo cadenas del grupo/filtro actual</label>
+    </div>
+    <div id="resBusca" class="mut">Escribe arriba el nombre de un programa, una serie, un equipo, un actor… o de una cadena.</div>
+  </div></section>
+</main>
+
+<footer>
+  <span id="estado">—</span>
+  <span class="ley" id="leyenda"></span>
+  <span style="margin-left:auto"><a href="#" id="recargar">Actualizar guía</a> · <a href="#" id="acerca">Acerca de</a></span>
+</footer>
+
+<div id="aviso"></div>
+<div id="modal"><div class="ficha" id="ficha"></div></div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const ROW_H = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rowh'));
+const CH_W  = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--chw'));
+const HDR_H = 36;
+const GENEROS = {cine:'Cine',series:'Series',deportes:'Deportes',noticias:'Noticias',infantil:'Infantil',
+                 documental:'Documental',musica:'Música',entretenimiento:'Entretenimiento',otro:'Otros'};
+const ORDEN_GRUPOS = ['Nacionales (TDT)','Autonómicas','Movistar+','Deportes','Cine y series',
+  'Documentales y estilo de vida','Infantil','Noticias','Música','Canales FAST / plataformas','Locales',
+  'Internacionales','Deportes internacionales','Otros'];
+
+const S = {
+  canales: [], vis: [], grupo: 'Todos', filtro: '', ppm: 5, dia: null, win: {s:0,e:0},
+  porCanal: new Map(), estado: null, favs: new Set(), resaltar: null, vista: 'tl', rango: [-1,-1],
+};
+
+// ---------- utilidades
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const hm = t => new Date(t*1000).toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+const diaLargo = t => new Date(t*1000).toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'});
+const diaCorto = t => new Date(t*1000).toLocaleDateString('es-ES', {weekday:'short', day:'numeric'});
+const ahora = () => Date.now()/1000;
+const medianoche = t => { const d = new Date(t*1000); d.setHours(0,0,0,0); return d.getTime()/1000; };
+const sumaDias = (t, n) => { const d = new Date(t*1000); d.setDate(d.getDate()+n); return d.getTime()/1000; };
+// ======================================================================
+//  "API" local: el mismo contrato que tenía el servidor Python, pero
+//  resuelto en el navegador con la guía guardada en IndexedDB.
+// ======================================================================
+const D = {datos: null, ini: [], fins: [], tit: [], desc: null};   // índices en memoria
+const CADUCIDAD = 6*3600;                                           // s: a partir de aquí se intenta actualizar
+
+function indexa(datos) {
+  D.datos = datos; D.desc = null;
+  const nc = datos.canales.length;
+  D.ini = new Array(nc).fill(-1); D.n = new Array(nc).fill(0);
+  D.fins = new Array(nc);
+  const P = datos.progs;
+  for (let k = 0; k < P.length; k++) { const c = P[k][0]; if (D.ini[c] < 0) D.ini[c] = k; D.n[c]++; }
+  for (let c = 0; c < nc; c++) {
+    const f = new Array(D.n[c]); let mx = 0;
+    for (let j = 0; j < D.n[c]; j++) { mx = Math.max(mx, P[D.ini[c] + j][2]); f[j] = mx; }  // fines monótonos para bisección
+    D.fins[c] = f;
+  }
+  D.tit = P.map(p => norm(p[3] + ' ' + p[4]));
+  D.porClave = new Map();
+  for (let k = 0; k < P.length; k++) D.porClave.set(datos.canales[P[k][0]].id + '|' + P[k][1], k);
+}
+const compacto = (p, k) => [k, p[0], p[1], p[2], p[3], p[5]];
+function bisectDer(a, x) { let lo = 0, hi = a.length; while (lo < hi) { const m = (lo + hi) >> 1; if (a[m] <= x) lo = m + 1; else hi = m; } return lo; }
+
+async function api(u, op) {
+  const url = new URL(u, 'http://local'), q = Object.fromEntries(url.searchParams), d = D.datos;
+  switch (url.pathname) {
+    case '/api/estado':
+      return {canales: d.canales.length, programas: d.progs.length, desde: d.desde, hasta: d.hasta,
+              actualizado: d.actualizado, generado: d.generado, cargando: false, error: ''};
+    case '/api/canales':
+      return d.canales.map(c => ({...c}));
+    case '/api/rejilla': {
+      const desde = +q.desde, hasta = Math.min(+q.hasta, desde + 4*86400), fuera = [];
+      for (let c = 0; c < d.canales.length; c++) {
+        if (D.ini[c] < 0) continue;
+        for (let j = bisectDer(D.fins[c], desde); j < D.n[c]; j++) {
+          const k = D.ini[c] + j, p = d.progs[k];
+          if (p[1] >= hasta) break;
+          if (p[2] > desde) fuera.push(compacto(p, k));
+        }
+      }
+      return {desde, hasta, progs: fuera};
+    }
+    case '/api/prog': {
+      const k = +q.id, p = d.progs[k];
+      return {id: k, c: p[0], s: p[1], e: p[2], t: p[3], st: p[4], g: p[5], d: p[6], img: p[7], edad: p[8], nota: p[9],
+              canal: d.canales[p[0]]};
+    }
+    case '/api/buscar': {
+      const terminos = norm((q.q || '').trim()).split(/\s+/).filter(Boolean);
+      if (!terminos.length) return {total: 0, resultados: []};
+      const enDesc = q.desc === '1', pasados = q.pasados === '1', t0 = ahora();
+      const sel = q.canales ? new Set(q.canales.split(',').map(Number)) : null;
+      if (enDesc && !D.desc) D.desc = d.progs.map(p => norm(p[6]));
+      const res = [];
+      for (let k = 0; k < d.progs.length; k++) {
+        const txt = enDesc ? D.tit[k] + ' ' + D.desc[k] : D.tit[k];
+        if (!terminos.every(t => txt.includes(t))) continue;
+        const p = d.progs[k];
+        if (!pasados && p[2] < t0) continue;
+        if (sel && !sel.has(p[0])) continue;
+        res.push(k);
+      }
+      res.sort((a, b) => d.progs[a][1] - d.progs[b][1] || d.progs[a][0] - d.progs[b][0]);
+      return {total: res.length, resultados: res.slice(0, 400).map(k => [...compacto(d.progs[k], k), d.progs[k][4]])};
+    }
+  }
+  throw new Error('Ruta desconocida ' + url.pathname);
+}
+
+// ---------- almacenamiento (IndexedDB)
+const BD = {
+  abrir() {
+    return new Promise((ok, mal) => {
+      const r = indexedDB.open('parrilla_tv', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('guia');
+      r.onsuccess = () => ok(r.result); r.onerror = () => mal(r.error);
+    });
+  },
+  async leer() {
+    try {
+      const db = await this.abrir();
+      return await new Promise((ok, mal) => {
+        const r = db.transaction('guia').objectStore('guia').get('actual');
+        r.onsuccess = () => ok(r.result || null); r.onerror = () => mal(r.error);
+      });
+    } catch (e) { console.warn('IndexedDB', e); return null; }
+  },
+  async guardar(datos) {
+    try {
+      const db = await this.abrir();
+      await new Promise((ok, mal) => {
+        const tx = db.transaction('guia', 'readwrite');
+        tx.objectStore('guia').put(datos, 'actual');
+        tx.oncomplete = ok; tx.onerror = () => mal(tx.error);
+      });
+    } catch (e) { console.warn('No se pudo guardar la guía', e); }
+  },
+};
+
+// ---------- descarga en segundo plano (Web Worker)
+let descargando = null;
+function descargarGuia(onProgreso) {
+  if (descargando) return descargando;
+  descargando = new Promise((ok, mal) => {
+    const w = new Worker('guia-worker.js');
+    w.onmessage = ev => {
+      const m = ev.data;
+      if (m.tipo === 'progreso') onProgreso && onProgreso(m);
+      else { w.terminate(); m.tipo === 'ok' ? ok(m.datos) : mal(new Error(m.msg)); }
+    };
+    w.onerror = e => { w.terminate(); mal(new Error(e.message || 'Error en el worker')); };
+    w.postMessage({});
+  }).finally(() => { descargando = null; });
+  return descargando;
+}
+
+function progresoCarga(m) {
+  if (m.fase === 'descarga') {
+    const mb = x => (x/1048576).toLocaleString('es-ES', {maximumFractionDigits: 1});
+    $('#cargaTxt').textContent = 'Descargando la guía de TV…';
+    $('#cargaBar').style.width = m.total ? Math.round(m.leidos/m.total*100) + '%' : '50%';
+    $('#cargaSub').textContent = mb(m.leidos) + (m.total ? ' / ' + mb(m.total) : '') + ' MB';
+  } else {
+    $('#cargaTxt').textContent = 'Procesando la programación…';
+    $('#cargaBar').style.width = '100%';
+    $('#cargaSub').textContent = 'Solo tarda unos segundos';
+  }
+}
+
+function aviso(txt, ms=3500) {
+  const a = $('#aviso'); a.textContent = txt; a.style.display = 'block';
+  clearTimeout(aviso.t); if (ms) aviso.t = setTimeout(() => a.style.display = 'none', ms);
+}
+
+async function asegurarDatos() {
+  let datos = await BD.leer();
+  if (!datos) {
+    if (!navigator.onLine) throw new Error('No hay conexión y todavía no se ha descargado ninguna guía.');
+    datos = await descargarGuia(progresoCarga);
+    $('#cargaTxt').textContent = 'Guardando…';
+    await BD.guardar(datos);
+  }
+  indexa(datos);
+  revisarMarcas();
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+}
+
+async function actualizarGuia(manual=false) {
+  if (!navigator.onLine) { if (manual) aviso('Sin conexión: se sigue usando la guía guardada'); return; }
+  aviso('Actualizando la guía…', 0);
+  try {
+    const datos = await descargarGuia(m => { if (m.fase === 'proceso') aviso('Procesando la guía nueva…', 0); });
+    await BD.guardar(datos);
+    indexa(datos);
+    revisarMarcas();
+    await refrescarTodo();
+    aviso('Guía actualizada ✓');
+  } catch (e) { aviso('No se pudo actualizar: ' + e.message, 6000); }
+}
+
+async function refrescarTodo() {
+  S.estado = await api('/api/estado');
+  const og = g => { const i = ORDEN_GRUPOS.indexOf(g); return i < 0 ? 99 : i; };
+  S.canales = (await api('/api/canales')).sort((a,b) => og(a.grupo) - og(b.grupo) || a.i - b.i);
+  pintaEstado();
+  cacheAhora = {t: 0, porCanal: new Map()};
+  aplicaFiltro();
+  const dia = Math.min(Math.max(S.dia, medianoche(S.estado.desde)), medianoche(S.estado.hasta));
+  const sl = $('#tl').scrollLeft, st = $('#tl').scrollTop;
+  await irADia(dia, false);
+  $('#tl').scrollLeft = sl; $('#tl').scrollTop = st;
+}
+const logo = (c, cls='') => c.logo ? `<img class="${cls}" src="${esc(c.logo)}" loading="lazy" alt="" onerror="this.style.visibility='hidden'">`
+                                   : `<span class="ph">${esc(c.nombre.slice(0,3))}</span>`;
+const ls = {
+  get(k, d) { try { const v = localStorage.getItem('ptv.'+k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('ptv.'+k, JSON.stringify(v)); } catch {} },
+};
+
+// ---------- arranque
+async function init() {
+  S.favs = new Set(ls.get('favs', []));
+  S.ppm = ls.get('ppm', 5); $('#zoom').value = S.ppm;
+  S.grupo = ls.get('grupo', 'Todos');
+  $('#leyenda').innerHTML = Object.entries(GENEROS).map(([k,v]) =>
+    `<span><i class="dot" style="background:var(--g-${k})"></i>${v}</span>`).join('');
+
+  await asegurarDatos();
+  S.estado = await api('/api/estado');
+  S.canales = await api('/api/canales');
+  const og = g => { const i = ORDEN_GRUPOS.indexOf(g); return i < 0 ? 99 : i; };
+  S.canales.sort((a,b) => og(a.grupo) - og(b.grupo) || a.i - b.i);
+  const grupos = ORDEN_GRUPOS.filter(g => S.canales.some(c => c.grupo === g && c.n));
+  S.canales.forEach(c => { if (!grupos.includes(c.grupo) && c.n) grupos.push(c.grupo); });
+  $('#grupo').innerHTML = ['Todos','★ Favoritos', ...grupos].map(g => `<option>${esc(g)}</option>`).join('');
+  if (![...$('#grupo').options].some(o => o.value === S.grupo)) S.grupo = 'Todos';
+  $('#grupo').value = S.grupo;
+  pintaEstado();
+  aplicaFiltro();
+  await irADia(medianoche(ahora()), true);
+  $('#cargando').style.display = 'none';
+  contadorAvisos(); comprobarAvisos();
+  setInterval(tic, 30000);
+  if (ahora() - S.estado.actualizado > CADUCIDAD) actualizarGuia();
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const instalada = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+  if (ios && !instalada && !ls.get('sinConsejo', false)) {
+    aviso('Para instalarla: botón Compartir ⬆︎ → «Añadir a pantalla de inicio»', 9000);
+    ls.set('sinConsejo', true);
+  }
+  document.addEventListener('visibilitychange', () => {        // al volver a abrir la app
+    if (document.visibilityState !== 'visible') return;
+    tic();
+    if (ahora() - S.estado.actualizado > CADUCIDAD) actualizarGuia();
+  });
+}
+
+function pintaEstado() {
+  const e = S.estado;
+  $('#estado').textContent = `${e.canales} cadenas · ${e.programas.toLocaleString('es-ES')} programas · ` +
+    `hasta el ${diaLargo(e.hasta)} · actualizada ${new Date(e.actualizado*1000).toLocaleString('es-ES', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})}`;
+}
+
+// ---------- filtros
+function aplicaFiltro() {
+  const f = norm(S.filtro.trim());
+  S.vis = S.canales.filter(c => {
+    if (!c.n) return false;
+    if (S.grupo === '★ Favoritos') { if (!S.favs.has(c.id)) return false; }
+    else if (S.grupo !== 'Todos' && c.grupo !== S.grupo) return false;
+    return !f || norm(c.nombre).includes(f);
+  });
+  S.rango = [-1,-1];
+  if (S.vista === 'tl') pintaTL(); else if (S.vista === 'ahora') pintaAhora();
+}
+
+// ---------- días
+function pintaDias() {
+  const hoy = medianoche(ahora());
+  const ini = Math.max(sumaDias(hoy, -1), medianoche(S.estado.desde));
+  const fin = medianoche(S.estado.hasta);
+  let h = '';
+  for (let d = ini; d <= fin; d = sumaDias(d, 1)) {
+    const lbl = d === hoy ? 'Hoy' : d === sumaDias(hoy,1) ? 'Mañana' : d === sumaDias(hoy,-1) ? 'Ayer' : diaCorto(d);
+    h += `<button class="btn ${d === S.dia ? 'on' : ''}" data-d="${d}">${lbl}</button>`;
+  }
+  $('#dias').innerHTML = h;
+  $('#dias .on')?.scrollIntoView({inline:'center', block:'nearest'});
+}
+
+async function irADia(dia, alAhora=false, foco=null) {
+  S.dia = dia;
+  S.win = {s: dia, e: dia + 30*3600};          // de 00:00 a 06:00 del día siguiente
+  pintaDias();
+  const r = await api(`/api/rejilla?desde=${S.win.s}&hasta=${S.win.e}`);
+  S.porCanal = new Map();
+  for (const p of r.progs) {
+    if (!S.porCanal.has(p[1])) S.porCanal.set(p[1], []);
+    S.porCanal.get(p[1]).push(p);
+  }
+  S.rango = [-1,-1];
+  pintaTL(true);
+  const tl = $('#tl');
+  if (foco) { tl.scrollLeft = Math.max(0, (foco.t - S.win.s)/60*S.ppm - 120); }
+  else if (alAhora && ahora() > S.win.s && ahora() < S.win.e) tl.scrollLeft = Math.max(0, (ahora() - S.win.s)/60*S.ppm - 45*S.ppm);
+  else tl.scrollLeft = 6*60*S.ppm;            // por defecto, a partir de las 06:00
+}
+
+// ---------- línea de tiempo
+function pintaTL(cabecera=true) {
+  const inner = $('#inner'), ppm = S.ppm, chw = CH_W(), rh = ROW_H();
+  const ancho = chw + (S.win.e - S.win.s)/60*ppm;
+  inner.style.width = ancho + 'px';
+  inner.style.height = (HDR_H + S.vis.length*rh) + 'px';
+  if (cabecera) {
+    let h = '<div id="corner">' + (S.vis.length ? `${S.vis.length} cadenas` : 'Sin cadenas') + '</div>';
+    const paso = ppm >= 4 ? 30 : 60;
+    for (let t = S.win.s; t < S.win.e; t += paso*60) {
+      const x = chw + (t - S.win.s)/60*ppm;
+      const d = new Date(t*1000);
+      const esDia = d.getHours() === 0 && d.getMinutes() === 0;
+      h += `<div class="tick ${d.getMinutes() ? '' : 'h'} ${esDia ? 'dia' : ''}" style="left:${x}px">` +
+           (esDia ? diaCorto(t) + ' · ' : '') + hm(t) + '</div>';
+    }
+    $('#hdr').innerHTML = h;
+  }
+  colocaAhora();
+  S.rango = [-1,-1];
+  filasVisibles();
+}
+
+function colocaAhora() {
+  const n = $('#now'), t = ahora();
+  if (t < S.win.s || t > S.win.e) { n.style.display = 'none'; return; }
+  n.style.display = 'block';
+  n.style.left = (CH_W() + (t - S.win.s)/60*S.ppm) + 'px';
+  n.style.height = $('#inner').style.height;
+}
+
+function filasVisibles() {
+  const tl = $('#tl'), rh = ROW_H();
+  const a = Math.max(0, Math.floor((tl.scrollTop - HDR_H)/rh) - 6);
+  const b = Math.min(S.vis.length, Math.ceil((tl.scrollTop + tl.clientHeight)/rh) + 6);
+  if (a === S.rango[0] && b === S.rango[1]) return;
+  S.rango = [a, b];
+  const ppm = S.ppm, chw = CH_W(), t0 = ahora();
+  let h = '';
+  for (let r = a; r < b; r++) {
+    const c = S.vis[r];
+    const ps = S.porCanal.get(c.i) || [];
+    h += `<div class="row" style="top:${HDR_H + r*rh}px;width:100%">` +
+         `<div class="ch" data-ch="${c.i}" title="${esc(c.nombre)} · ${esc(c.grupo)}">${logo(c)}` +
+         `<div class="nm"><b>${esc(c.nombre)}</b><small>${esc(c.grupo)}</small></div>` +
+         `<button class="star ${S.favs.has(c.id) ? 'on' : ''}" data-fav="${esc(c.id)}" title="Favorito">★</button></div>`;
+    if (!ps.length) h += '<div class="vacio">Sin programación para este día</div>';
+    for (const p of ps) {
+      const [id,, s, e, t, g] = p;
+      const x0 = Math.max(s, S.win.s), x1 = Math.min(e, S.win.e);
+      const left = chw + (x0 - S.win.s)/60*ppm, w = Math.max(2, (x1 - x0)/60*ppm - 2);
+      const cls = (e <= t0 ? ' pas' : (s <= t0 ? ' vivo' : '')) + (S.resaltar === id ? ' flash' : '') + (marcadoK(id) ? ' marc' : '');
+      h += `<div class="p g-${g}${cls}" data-id="${id}" style="left:${left}px;width:${w}px" ` +
+           `title="${hm(s)}–${hm(e)}  ${esc(t)}">` +
+           (w > 34 ? `<div class="in"><div class="h">${hm(s)}–${hm(e)}</div><div class="t">${esc(t)}</div></div>` : '') + '</div>';
+    }
+    h += '</div>';
+  }
+  $('#rows').innerHTML = h;
+}
+
+let rafScroll = 0;
+$('#tl').addEventListener('scroll', () => {
+  if (rafScroll) return;
+  rafScroll = requestAnimationFrame(() => { rafScroll = 0; filasVisibles(); });
+});
+
+// ---------- vista Ahora
+let cacheAhora = {t: 0, porCanal: new Map()};
+async function pintaAhora() {
+  const t0 = ahora();
+  if (t0 - cacheAhora.t > 60) {
+    const r = await api(`/api/rejilla?desde=${Math.floor(t0)}&hasta=${Math.floor(t0 + 8*3600)}`);
+    cacheAhora = {t: t0, porCanal: new Map()};
+    for (const p of r.progs) {
+      if (!cacheAhora.porCanal.has(p[1])) cacheAhora.porCanal.set(p[1], []);
+      cacheAhora.porCanal.get(p[1]).push(p);
+    }
+  }
+  let h = '', grupoAnt = null;
+  for (const c of S.vis) {
+    const ps = cacheAhora.porCanal.get(c.i) || [];
+    const cur = ps.find(p => p[2] <= t0 && p[3] > t0);
+    const sig = ps.filter(p => p[2] > t0).slice(0, 2);
+    if (!cur && !sig.length) continue;
+    if (c.grupo !== grupoAnt) { if (grupoAnt !== null) h += '</div>'; h += `<div class="grupo-h">${esc(c.grupo)}</div><div class="cards">`; grupoAnt = c.grupo; }
+    h += `<div class="card"><div class="top" data-ch="${c.i}">${logo(c)}<b>${esc(c.nombre)}</b>` +
+         `<button class="star ${S.favs.has(c.id) ? 'on' : ''}" data-fav="${esc(c.id)}">★</button></div>`;
+    if (cur) {
+      const pct = Math.min(100, (t0 - cur[2])/(cur[3] - cur[2])*100);
+      h += `<div class="cur" data-id="${cur[0]}"><div class="t ${marcadoK(cur[0]) ? 'marc-i' : ''}"><i class="dot" style="background:var(--g-${cur[5]})"></i>${esc(cur[4])}</div>` +
+           `<div class="bar"><i style="width:${pct}%"></i></div>` +
+           `<div class="mut" style="font-size:12px">${hm(cur[2])} – ${hm(cur[3])} · quedan ${Math.round((cur[3]-t0)/60)} min</div></div>`;
+    } else h += '<div class="mut">Sin información ahora</div>';
+    for (const p of sig) h += `<div class="nx ${marcadoK(p[0]) ? 'marc-i' : ''}" data-id="${p[0]}">${hm(p[2])} · ${esc(p[4])}</div>`;
+    h += '</div>';
+  }
+  if (grupoAnt !== null) h += '</div>';
+  $('#ahora').innerHTML = h || '<p class="mut">No hay cadenas con programación en el filtro actual.</p>';
+}
+
+// ---------- búsqueda
+async function buscar() {
+  const q = $('#q').value.trim();
+  cambiaVista('buscar');
+  if (q.length < 2) { $('#resBusca').innerHTML = '<span class="mut">Escribe al menos 2 letras.</span>'; return; }
+  $('#resBusca').innerHTML = '<span class="mut">Buscando…</span>';
+  const nq = norm(q);
+  const cadenas = S.canales.filter(c => c.n && norm(c.nombre).includes(nq)).slice(0, 40);
+  let url = `/api/buscar?q=${encodeURIComponent(q)}&desc=${$('#oDesc').checked ? 1 : 0}&pasados=${$('#oPas').checked ? 1 : 0}`;
+  if ($('#oGrupo').checked) url += '&canales=' + S.vis.map(c => c.i).join(',');
+  const r = await api(url);
+  const porI = new Map(S.canales.map(c => [c.i, c]));
+  let h = '';
+  if (cadenas.length) {
+    h += `<div class="grupo-h">Cadenas (${cadenas.length})</div><div class="chips">` +
+      cadenas.map(c => `<span class="chip" data-irch="${c.i}">${logo(c)}${esc(c.nombre)}</span>`).join('') + '</div>';
+  }
+  h += `<div class="grupo-h">Programas · ${r.total.toLocaleString('es-ES')} emisiones` +
+       (r.total > r.resultados.length ? ` (mostrando ${r.resultados.length})` : '') + '</div>';
+  if (!r.resultados.length) h += '<p class="mut">No se ha encontrado nada en la guía.</p>';
+  else {
+    h += '<table class="res">';
+    let dAnt = null; const t0 = ahora();
+    for (const [id, ci, s, e, t, g, st] of r.resultados) {
+      const d = medianoche(s), c = porI.get(ci);
+      if (d !== dAnt) { h += `<tr class="d"><td colspan="5">${diaLargo(s)}</td></tr>`; dAnt = d; }
+      const vivo = s <= t0 && e > t0;
+      h += `<tr class="r ${vivo ? 'vivo' : ''}" data-id="${id}"><td class="hora">${hm(s)} – ${hm(e)}${vivo ? ' <b style="color:var(--now)">●</b>' : ''}</td>` +
+           `<td class="cn">${c ? logo(c) + esc(c.nombre) : ''}</td>` +
+           `<td class="${marcadoK(id) ? 'marc-i' : ''}"><i class="dot" style="background:var(--g-${g})"></i>${esc(t)}<div class="st">${esc(st)}</div></td>` +
+           `<td class="ir"><button class="btn" data-ir="${id}" data-s="${s}" data-c="${ci}">Ver en parrilla</button></td></tr>`;
+    }
+    h += '</table>';
+  }
+  $('#resBusca').innerHTML = h;
+}
+
+// ---------- ficha de programa
+async function ficha(id) {
+  const p = await api('/api/prog?id=' + id);
+  const c = p.canal, dur = Math.round((p.e - p.s)/60), t0 = ahora();
+  const estado = p.e <= t0 ? 'Ya emitido' : p.s <= t0 ? '<b style="color:var(--now)">● En emisión</b>' : '';
+  const base = p.t.replace(/\s+T\d+\s*E\d+.*$/, '').replace(/\s*\(\d+\)\s*$/, '');
+  $('#ficha').innerHTML = `<button class="cerrar" id="cerrar">×</button>` +
+    (p.img ? `<img class="img" src="${esc(p.img)}" alt="" onerror="this.remove()">` : '') +
+    `<div class="cuerpo"><div class="meta">${logo(c)} <b style="color:var(--txt)">${esc(c.nombre)}</b> · ${esc(c.grupo)}</div>` +
+    `<h2>${esc(p.t)}</h2>` +
+    `<div class="meta"><span>${diaLargo(p.s)}, ${hm(p.s)} – ${hm(p.e)} (${dur} min)</span>${estado ? '<span>' + estado + '</span>' : ''}</div>` +
+    (p.st ? `<div class="meta" style="margin-top:6px"><i class="dot" style="background:var(--g-${p.g})"></i>${esc(p.st)}</div>` : '') +
+    (p.d ? `<div class="desc">${esc(p.d)}</div>` : '<div class="desc mut">Sin descripción.</div>') +
+    `<div class="acc">` + (p.e > t0 ? (marcadoK(p.id)
+        ? `<button class="btn amarillo" data-desmarcar="${p.id}">🔕 Quitar aviso</button>`
+        : `<button class="btn amarillo" data-marcar="${p.id}">🔔 Avisarme</button>`) +
+      `<button class="btn" data-serie="${p.id}">🔔 Todas las emisiones en ${esc(c.nombre)}</button>` : '') +
+    `<button class="btn" data-ir="${p.id}" data-s="${p.s}" data-c="${p.c}">Ver en la parrilla</button>` +
+    `<button class="btn" id="otras" data-q="${esc(base)}">Otras emisiones de «${esc(base)}»</button>` +
+    `<button class="btn" data-irch="${c.i}">Toda la programación de ${esc(c.nombre)}</button></div></div>`;
+  $('#modal').classList.add('on');
+}
+const cierraFicha = () => $('#modal').classList.remove('on');
+
+// ======================================================================
+//  AVISOS: programas marcados → Calendario de iOS (.ics con alarma)
+//  + avisos dentro de la app mientras está abierta
+// ======================================================================
+S.marcas = {};             // clave "idCanal|inicio" → {cid, canal, s, e, t, st, d, min, cal, notif, estado}
+S.avisoMin = 10;
+const MINUTOS = [0, 5, 10, 15, 30, 45, 60, 120];
+const esIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const claveK = k => { const p = D.datos.progs[k]; return D.datos.canales[p[0]].id + '|' + p[1]; };
+const marcadoK = k => !!S.marcas[claveK(k)];
+const baseTitulo = t => t.replace(/\s+T\d+[\s/]*E?\d*.*$/, '').replace(/\s*\(\d+\)\s*$/, '').trim();
+const minDe = m => m.min ?? S.avisoMin;
+const txtMin = n => n === 0 ? 'a la hora' : n < 60 ? `${n} min antes` : `${n/60} h antes`;
+
+function cargaMarcas() { S.marcas = ls.get('marcas', {}); S.avisoMin = ls.get('avisoMin', 10); }
+function guardaMarcas() { ls.set('marcas', S.marcas); contadorAvisos(); }
+function contadorAvisos() {
+  const n = Object.values(S.marcas).filter(m => m.e > ahora()).length;
+  $('#nAvisos').textContent = n ? n : '';
+}
+function repinta() {
+  S.rango = [-1,-1]; filasVisibles();
+  if (S.vista === 'ahora') pintaAhora();
+  if (S.vista === 'avisos') pintaAvisos();
+}
+
+function marcaDesdeProg(k) {
+  const p = D.datos.progs[k], c = D.datos.canales[p[0]];
+  return {cid: c.id, canal: c.nombre, s: p[1], e: p[2], t: p[3], st: p[4], d: (p[6] || '').slice(0, 400),
+          min: null, cal: false, notif: false, estado: ''};
+}
+function marcar(k, desdeFicha=false) {
+  S.marcas[claveK(k)] = marcaDesdeProg(k);
+  guardaMarcas(); repinta();
+  if (desdeFicha) ficha(k);
+  aviso(`🔔 Marcado. Ve a la pestaña 🔔 para añadirlo al Calendario`);
+}
+function desmarcar(clave, desdeFicha=false) {
+  const k = D.porClave.get(clave);
+  delete S.marcas[clave];
+  guardaMarcas(); repinta();
+  if (desdeFicha && k !== undefined) ficha(k);
+}
+function marcarSerie(k) {
+  const p = D.datos.progs[k], base = norm(baseTitulo(p[3])), c = p[0], t0 = ahora();
+  let n = 0;
+  for (let j = 0; j < D.n[c]; j++) {
+    const kk = D.ini[c] + j, q = D.datos.progs[kk];
+    if (q[2] <= t0 || norm(baseTitulo(q[3])) !== base) continue;
+    const cl = claveK(kk);
+    if (!S.marcas[cl]) { S.marcas[cl] = marcaDesdeProg(kk); n++; }
+  }
+  guardaMarcas(); repinta(); ficha(k);
+  aviso(n ? `🔔 ${n} emisiones marcadas` : 'Ya estaban todas marcadas');
+}
+
+// Tras actualizar la guía: comprueba si los programas marcados siguen a la misma hora
+function revisarMarcas() {
+  cargaMarcas();
+  const t0 = ahora();
+  for (const [cl, m] of Object.entries(S.marcas)) {
+    if (m.e < t0 - 7*86400) { delete S.marcas[cl]; continue; }      // limpieza de lo muy antiguo
+    if (m.e < t0 || D.porClave.has(cl)) { if (m.estado === 'perdido') m.estado = ''; continue; }
+    // ¿se ha movido? mismo canal y mismo título en ±6 h
+    const ci = D.datos.canales.findIndex(c => c.id === m.cid), base = norm(baseTitulo(m.t));
+    let nuevo = -1;
+    if (ci >= 0) for (let j = 0; j < D.n[ci]; j++) {
+      const kk = D.ini[ci] + j, q = D.datos.progs[kk];
+      if (Math.abs(q[1] - m.s) <= 6*3600 && norm(baseTitulo(q[3])) === base && !S.marcas[claveK(kk)]) { nuevo = kk; break; }
+    }
+    if (nuevo >= 0) {
+      const q = D.datos.progs[nuevo], cl2 = claveK(nuevo);
+      S.marcas[cl2] = {...m, s: q[1], e: q[2], t: q[3], cal: false, notif: false, estado: 'movido', antes: m.s};
+      delete S.marcas[cl];
+    } else if (D.datos.desde <= m.s) m.estado = 'perdido';
+  }
+  guardaMarcas();
+}
+
+// ---------- calendario (.ics)
+function icsEsc(t) { return String(t).replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+function icsFecha(t) { return new Date(t*1000).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
+function icsPliega(linea) {           // líneas de 75 octetos como máximo (RFC 5545)
+  const enc = new TextEncoder(); let out = '', cur = '', n = 0;
+  for (const ch of linea) {
+    const b = enc.encode(ch).length;
+    if (n + b > 73) { out += cur + '\r\n '; cur = ''; n = 1; }
+    cur += ch; n += b;
+  }
+  return out + cur;
+}
+function generaIcs(lista) {
+  const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Parrilla TV//ES', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+             'X-WR-CALNAME:Parrilla TV'];
+  const stamp = icsFecha(ahora());
+  for (const m of lista) {
+    const min = minDe(m);
+    L.push('BEGIN:VEVENT', `UID:${icsEsc(m.cid.replace(/\s+/g, '_'))}-${m.s}@parrilla-tv`, `DTSTAMP:${stamp}`,
+      `DTSTART:${icsFecha(m.s)}`, `DTEND:${icsFecha(m.e)}`,
+      `SUMMARY:${icsEsc('📺 ' + m.t + ' (' + m.canal + ')')}`, `LOCATION:${icsEsc(m.canal)}`,
+      `DESCRIPTION:${icsEsc([m.st, m.d].filter(Boolean).join('\n\n'))}`, 'TRANSP:TRANSPARENT',
+      'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc(m.t + ' en ' + m.canal + ' a las ' + hm(m.s))}`,
+      `TRIGGER:-PT${min}M`, 'END:VALARM', 'END:VEVENT');
+  }
+  L.push('END:VCALENDAR');
+  return L.map(icsPliega).join('\r\n') + '\r\n';
+}
+function pendientesCal() { return Object.entries(S.marcas).filter(([, m]) => m.e > ahora() && !m.cal).map(([k]) => k); }
+
+async function exportarIcs(claves) {
+  claves = claves || pendientesCal();
+  const lista = claves.map(k => S.marcas[k]).filter(Boolean);
+  if (!lista.length) return aviso('No hay avisos pendientes de añadir al Calendario');
+  const texto = generaIcs(lista);
+  const nombre = lista.length === 1 ? 'aviso-tv.ics' : `avisos-tv-${lista.length}.ics`;
+  const modo = ls.get('modoIcs', 'abrir');
+  try {
+    if (modo === 'compartir' && navigator.canShare) {
+      const fich = new File([texto], nombre, {type: 'text/calendar'});
+      if (!navigator.canShare({files: [fich]})) throw new Error('Este navegador no puede compartir ficheros');
+      await navigator.share({files: [fich], title: 'Avisos Parrilla TV'});
+    } else if (esIOS) {
+      // Safari reconoce el tipo text/calendar y muestra «Añadir todo» al Calendario
+      location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(texto);
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([texto], {type: 'text/calendar;charset=utf-8'}));
+      a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') return;
+    return aviso('No se pudo exportar: ' + e.message, 6000);
+  }
+  for (const m of lista) { m.cal = true; m.estado = m.estado === 'movido' ? '' : m.estado; }
+  guardaMarcas(); pintaAvisos();
+}
+
+// ---------- avisos dentro de la app (solo con la app abierta)
+async function pedirPermisoNotif() {
+  if (!('Notification' in window)) {
+    return aviso(esIOS ? 'En iPhone las notificaciones solo funcionan con la app instalada en la pantalla de inicio (iOS 16.4+)'
+                       : 'Este navegador no admite notificaciones', 7000);
+  }
+  const r = await Notification.requestPermission();
+  ls.set('notifApp', r === 'granted'); pintaAvisos();
+  if (r !== 'granted') aviso('Permiso denegado. Puedes cambiarlo en Ajustes → Notificaciones → Parrilla TV', 7000);
+}
+async function comprobarAvisos() {
+  const t0 = ahora(); let cambios = false;
+  for (const m of Object.values(S.marcas)) {
+    if (m.notif || m.e <= t0) continue;
+    if (t0 >= m.s - minDe(m)*60) {
+      m.notif = true; cambios = true;
+      const quedan = Math.round((m.s - t0)/60);
+      const cuerpo = `${m.canal} · ${hm(m.s)}` + (quedan > 0 ? ` (en ${quedan} min)` : ' (empezado)');
+      aviso(`🔔 ${m.t} — ${cuerpo}`, 15000);
+      if (ls.get('notifApp', false) && 'Notification' in window && Notification.permission === 'granted') {
+        try {
+          const reg = await navigator.serviceWorker?.getRegistration();
+          if (reg) await reg.showNotification('📺 ' + m.t, {body: cuerpo, tag: m.cid + m.s, icon: 'icon-192.png'});
+          else new Notification('📺 ' + m.t, {body: cuerpo});
+        } catch (e) { console.warn(e); }
+      }
+    }
+  }
+  if (cambios) guardaMarcas();
+}
+
+// ---------- pestaña 🔔
+function pintaAvisos() {
+  const t0 = ahora();
+  const lista = Object.entries(S.marcas).filter(([, m]) => m.e > t0).sort((a, b) => a[1].s - b[1].s);
+  const pas = Object.values(S.marcas).filter(m => m.e <= t0).length;
+  const pend = pendientesCal().length;
+  const opts = sel => MINUTOS.map(n => `<option value="${n}" ${n === sel ? 'selected' : ''}>${txtMin(n)}</option>`).join('');
+  const notifOk = ls.get('notifApp', false) && 'Notification' in window && Notification.permission === 'granted';
+  let h = `<div class="av-conf">
+    <div class="fila"><b>Avisar por defecto</b><select id="avDef">${opts(S.avisoMin)}</select></div>
+    <div class="fila">
+      <button class="btn amarillo" data-ics="*" ${pend ? '' : 'disabled'}>📅 Añadir ${pend || ''} al Calendario</button>
+      <select id="modoIcs" title="Cómo exportar">
+        <option value="abrir" ${ls.get('modoIcs','abrir') === 'abrir' ? 'selected' : ''}>Abrir en Calendario</option>
+        <option value="compartir" ${ls.get('modoIcs','abrir') === 'compartir' ? 'selected' : ''}>Compartir fichero .ics</option>
+      </select>
+      ${notifOk ? '<span class="ok">✓ Avisos en la app activados</span>' : '<button class="btn" id="bNotif">Activar avisos en la app</button>'}
+      ${pas ? `<button class="btn" id="bLimpiar">Quitar ${pas} ya emitidos</button>` : ''}
+    </div>
+    <div class="mut" style="font-size:12px">El aviso fiable es el del <b>Calendario</b>: suena aunque la app esté cerrada.
+      Cada vez que marques programas nuevos, pulsa «Añadir al Calendario» (solo exporta los que faltan).
+      Los avisos dentro de la app solo saltan mientras la tienes abierta.
+      Si «Abrir en Calendario» no hace nada, elige «Compartir fichero .ics» → «Guardar en Archivos» y abre el fichero desde Archivos.</div>
+  </div>`;
+  if (!lista.length) h += '<p class="mut">No tienes programas marcados. Abre la ficha de un programa y pulsa «🔔 Avisarme».</p>';
+  let dAnt = null;
+  for (const [cl, m] of lista) {
+    const d = medianoche(m.s);
+    if (d !== dAnt) { h += `<div class="grupo-h">${diaLargo(m.s)}</div>`; dAnt = d; }
+    const est = m.estado === 'movido' ? `<span class="warn">⚠ Cambió de hora (antes ${hm(m.antes)})${m.cal ? '' : ' · vuelve a añadirlo al Calendario'}</span>`
+              : m.estado === 'perdido' ? '<span class="warn">⚠ Ya no aparece en la guía</span>'
+              : m.cal ? '<span class="ok">📅 En el Calendario</span>' : '<span class="mut" style="font-size:12px">Sin añadir al Calendario</span>';
+    h += `<div class="av-item"><div class="hora">${hm(m.s)}–${hm(m.e)}</div>
+      <div class="tx" data-avk="${esc(cl)}"><b>${esc(m.t)}</b><small>${esc(m.canal)}</small><br>${est}</div>
+      <select data-min="${esc(cl)}" title="Cuándo avisar">${opts(minDe(m))}</select>
+      <button class="btn" data-ics="${esc(cl)}" title="Añadir este al Calendario">📅</button>
+      <button class="x" data-quitar="${esc(cl)}" title="Quitar aviso">✕</button></div>`;
+  }
+  $('#avisos').innerHTML = h;
+}
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'avDef') { S.avisoMin = +t.value; ls.set('avisoMin', S.avisoMin); pintaAvisos(); }
+  else if (t.id === 'modoIcs') ls.set('modoIcs', t.value);
+  else if (t.dataset && t.dataset.min) {
+    const m = S.marcas[t.dataset.min]; if (!m) return;
+    m.min = +t.value === S.avisoMin ? null : +t.value;
+    if (m.cal) { m.cal = false; aviso('Cambiado. Vuelve a añadirlo al Calendario para actualizar la alarma', 6000); }
+    m.notif = false; guardaMarcas(); pintaAvisos();
+  }
+});
+document.addEventListener('click', e => {
+  if (e.target.id === 'bNotif') pedirPermisoNotif();
+  if (e.target.id === 'bLimpiar') {
+    for (const [k, m] of Object.entries(S.marcas)) if (m.e <= ahora()) delete S.marcas[k];
+    guardaMarcas(); pintaAvisos();
+  }
+});
+
+// ---------- navegación
+function cambiaVista(v) {
+  S.vista = v;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  document.querySelectorAll('.vista').forEach(s => s.classList.toggle('on', s.id === 'v-' + v));
+  if (v === 'tl') { S.rango = [-1,-1]; pintaTL(); }
+  if (v === 'ahora') pintaAhora();
+  if (v === 'avisos') pintaAvisos();
+}
+
+async function irAPrograma(id, s, ci) {
+  cierraFicha();
+  if (!S.vis.some(c => c.i === ci)) { S.grupo = 'Todos'; $('#grupo').value = 'Todos'; S.filtro = ''; $('#filtroCh').value = ''; aplicaFiltro(); }
+  cambiaVista('tl');
+  S.resaltar = id;
+  let dia = medianoche(s);
+  if (s - dia < 6*3600 && sumaDias(dia, -1) >= medianoche(S.estado.desde)) dia = sumaDias(dia, -1); // madrugada → ventana del día anterior
+  if (s < S.win.s || s >= S.win.e || dia !== S.dia && s < S.win.s) await irADia(dia, false, {t: s});
+  else $('#tl').scrollLeft = Math.max(0, (s - S.win.s)/60*S.ppm - 120);
+  const r = S.vis.findIndex(c => c.i === ci);
+  $('#tl').scrollTop = Math.max(0, HDR_H + r*ROW_H() - $('#tl').clientHeight/2);
+  S.rango = [-1,-1]; filasVisibles();
+  setTimeout(() => { S.resaltar = null; }, 4000);
+}
+
+function irACanal(ci) {
+  cierraFicha();
+  const c = S.canales.find(x => x.i === ci);
+  S.grupo = 'Todos'; $('#grupo').value = 'Todos';
+  S.filtro = c.nombre; $('#filtroCh').value = c.nombre;
+  aplicaFiltro();
+  cambiaVista('tl');
+  if (S.dia !== medianoche(ahora())) irADia(medianoche(ahora()), true);
+  else $('#tl').scrollLeft = Math.max(0, (ahora() - S.win.s)/60*S.ppm - 45*S.ppm);
+  $('#tl').scrollTop = 0;
+}
+
+function toggleFav(id) {
+  S.favs.has(id) ? S.favs.delete(id) : S.favs.add(id);
+  ls.set('favs', [...S.favs]);
+  if (S.grupo === '★ Favoritos') aplicaFiltro();
+  else document.querySelectorAll(`[data-fav="${CSS.escape(id)}"]`).forEach(b => b.classList.toggle('on', S.favs.has(id)));
+}
+
+function tic() {
+  colocaAhora();
+  S.rango = [-1,-1]; filasVisibles();
+  if (S.vista === 'ahora') pintaAhora();
+  if (S.vista === 'avisos') pintaAvisos();
+  if (medianoche(ahora()) !== medianoche(ahora() - 30)) pintaDias();
+  comprobarAvisos();
+}
+
+// ---------- eventos
+document.addEventListener('click', e => {
+  const t = e.target;
+  const fav = t.closest('[data-fav]'); if (fav) { e.stopPropagation(); return toggleFav(fav.dataset.fav); }
+  const mk = t.closest('[data-marcar]'); if (mk) { e.stopPropagation(); return marcar(+mk.dataset.marcar, true); }
+  const dm = t.closest('[data-desmarcar]'); if (dm) { e.stopPropagation(); return desmarcar(claveK(+dm.dataset.desmarcar), true); }
+  const se = t.closest('[data-serie]'); if (se) { e.stopPropagation(); return marcarSerie(+se.dataset.serie); }
+  const qa = t.closest('[data-quitar]'); if (qa) { e.stopPropagation(); return desmarcar(qa.dataset.quitar); }
+  const ic = t.closest('[data-ics]'); if (ic) { e.stopPropagation(); return exportarIcs(ic.dataset.ics === '*' ? null : [ic.dataset.ics]); }
+  const avk = t.closest('[data-avk]'); if (avk) { const k = D.porClave.get(avk.dataset.avk); if (k !== undefined) return ficha(k); return; }
+  const ir = t.closest('[data-ir]'); if (ir) { e.stopPropagation(); return irAPrograma(+ir.dataset.ir, +ir.dataset.s, +ir.dataset.c); }
+  const irch = t.closest('[data-irch]'); if (irch) return irACanal(+irch.dataset.irch);
+  if (t.id === 'otras') { $('#q').value = t.dataset.q; cierraFicha(); return buscar(); }
+  if (t.id === 'cerrar' || t.id === 'modal') return cierraFicha();
+  const p = t.closest('[data-id]'); if (p) return ficha(+p.dataset.id);
+  const ch = t.closest('.ch[data-ch], .top[data-ch]'); if (ch) return irACanal(+ch.dataset.ch);
+  const d = t.closest('#dias [data-d]'); if (d) return irADia(+d.dataset.d, +d.dataset.d === medianoche(ahora()));
+  const tab = t.closest('#tabs button'); if (tab) return cambiaVista(tab.dataset.v);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cierraFicha(); });
+$('#fBusca').addEventListener('submit', e => { e.preventDefault(); buscar(); });
+['oDesc','oPas','oGrupo'].forEach(id => $('#'+id).addEventListener('change', () => $('#q').value.trim() && buscar()));
+$('#grupo').addEventListener('change', e => { S.grupo = e.target.value; ls.set('grupo', S.grupo); $('#tl').scrollTop = 0; aplicaFiltro(); });
+let tFiltro = 0;
+$('#filtroCh').addEventListener('input', e => { clearTimeout(tFiltro); tFiltro = setTimeout(() => { S.filtro = e.target.value; $('#tl').scrollTop = 0; aplicaFiltro(); }, 150); });
+$('#bAhora').addEventListener('click', () => { cambiaVista('tl'); irADia(medianoche(ahora()), true); });
+$('#bPrev').addEventListener('click', () => { const d = sumaDias(S.dia, -1); if (d >= medianoche(S.estado.desde)) irADia(d); });
+$('#bNext').addEventListener('click', () => { const d = sumaDias(S.dia, 1); if (d <= medianoche(S.estado.hasta)) irADia(d); });
+$('#zoom').addEventListener('input', e => {
+  const tl = $('#tl'), chw = CH_W();
+  const tCentro = S.win.s + (tl.scrollLeft + (tl.clientWidth - chw)/2)/S.ppm*60;
+  S.ppm = +e.target.value; ls.set('ppm', S.ppm);
+  pintaTL(true);
+  tl.scrollLeft = (tCentro - S.win.s)/60*S.ppm - (tl.clientWidth - chw)/2;
+});
+$('#recargar').addEventListener('click', e => { e.preventDefault(); actualizarGuia(true); });
+$('#acerca').addEventListener('click', e => {
+  e.preventDefault();
+  $('#ficha').innerHTML = `<button class="cerrar" id="cerrar">×</button><div class="cuerpo"><h2>📺 Parrilla TV</h2>
+    <p>Guía de televisión de España que funciona entera en tu dispositivo: descarga la guía pública
+    <b>EPG dobleM</b> (davidmuma, GitHub), la guarda y la consulta sin servidor. Se actualiza sola cada ${CADUCIDAD/3600} h
+    cuando hay conexión; sin conexión usa la última guía guardada.</p>
+    <p class="mut">Guía actual: ${esc(S.estado.generado)} · descargada el ${new Date(S.estado.actualizado*1000).toLocaleString('es-ES')}<br>
+    ${S.estado.canales} cadenas · ${S.estado.programas.toLocaleString('es-ES')} programas · hasta el ${diaLargo(S.estado.hasta)}</p>
+    <p class="mut">Para instalarla en el iPhone: en Safari, botón Compartir → «Añadir a pantalla de inicio».</p></div>`;
+  $('#modal').classList.add('on');
+});
+window.addEventListener('resize', () => { S.rango = [-1,-1]; pintaTL(true); });
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW', e));
+init().catch(err => {
+  $('#cargaTxt').textContent = 'No se pudo cargar la guía';
+  $('#cargaSub').innerHTML = esc(err.message || err) + '<br><br><button class="btn" onclick="location.reload()">Reintentar</button>';
+});
+</script>
+</body>
+</html>
